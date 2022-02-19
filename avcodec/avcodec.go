@@ -181,7 +181,8 @@ func AvcodecFindDecoder(id CodecId) *Codec {
 }
 
 func AvCodecIterate(p *unsafe.Pointer) *Codec {
-	return (*Codec)(C.av_codec_iterate(p))
+	//return (*Codec)(C.av_codec_iterate(p))
+	return nil
 }
 
 //Find a registered decoder with the specified name.
