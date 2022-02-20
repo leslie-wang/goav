@@ -16,14 +16,15 @@ package avformat
 //#include <libavcodec/avcodec.h>
 import "C"
 import (
+	"github.com/giorgisio/goav/avutil"
 	"reflect"
 	"unsafe"
 
 	"github.com/giorgisio/goav/avcodec"
 )
 
-func (cctxt *CodecContext) Type() MediaType {
-	return MediaType(cctxt.codec_type)
+func (cctxt *CodecContext) Type() avutil.MediaType {
+	return avutil.MediaType(cctxt.codec_type)
 }
 
 func (cctxt *CodecContext) SetBitRate(br int64) {
@@ -38,11 +39,11 @@ func (cctxt *CodecContext) SetCodecId(codecId CodecId) {
 	cctxt.codec_id = C.enum_AVCodecID(codecId)
 }
 
-func (cctxt *CodecContext) GetCodecType() MediaType {
-	return MediaType(cctxt.codec_type)
+func (cctxt *CodecContext) GetCodecType() avutil.MediaType {
+	return avutil.MediaType(cctxt.codec_type)
 }
 
-func (cctxt *CodecContext) SetCodecType(ctype MediaType) {
+func (cctxt *CodecContext) SetCodecType(ctype avutil.MediaType) {
 	cctxt.codec_type = C.enum_AVMediaType(ctype)
 }
 

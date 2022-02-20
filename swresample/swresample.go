@@ -10,6 +10,7 @@ package swresample
 	#include <libswresample/swresample.h>
 */
 import "C"
+import "github.com/giorgisio/goav/avutil"
 
 type (
 	Context        C.struct_SwrContext
@@ -29,8 +30,9 @@ func SwrAlloc() *Context {
 }
 
 //Configuration accessors
-func SwresampleVersion() uint {
-	return uint(C.swresample_version())
+func SwresampleVersion() (uint, uint, uint) {
+	v := uint(C.swresample_version())
+	return avutil.AVVersionMajor(v), avutil.AVVersionMinor(v), avutil.AVVersionMicro(v)
 }
 
 func SwresampleConfiguration() string {

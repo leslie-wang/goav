@@ -3,6 +3,8 @@
 
 package avcodec
 
+import "github.com/giorgisio/goav/avutil"
+
 func (ctxt *Context) ActiveThreadType() int {
 	return int(ctxt.active_thread_type)
 }
@@ -499,8 +501,8 @@ func (ctxt *Context) CodecId() CodecId {
 	return (CodecId)(ctxt.codec_id)
 }
 
-func (ctxt *Context) CodecType() MediaType {
-	return (MediaType)(ctxt.codec_type)
+func (ctxt *Context) CodecType() avutil.MediaType {
+	return (avutil.MediaType)(ctxt.codec_type)
 }
 
 func (ctxt *Context) ColorPrimaries() AvColorPrimaries {

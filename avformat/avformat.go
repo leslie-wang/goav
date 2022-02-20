@@ -48,7 +48,6 @@ type (
 	FFFrac                     C.struct_FFFrac
 	AvStreamParseType          C.enum_AVStreamParseType
 	AvDiscard                  C.enum_AVDiscard
-	MediaType                  C.enum_AVMediaType
 	AvDurationEstimationMethod C.enum_AVDurationEstimationMethod
 	AvPacketSideDataType       C.enum_AVPacketSideDataType
 	CodecId                    C.enum_AVCodecID
@@ -89,8 +88,9 @@ func (f *OutputFormat) AvOformatNext() *OutputFormat {
 }
 
 //Return the LIBAvFORMAT_VERSION_INT constant.
-func AvformatVersion() uint {
-	return uint(C.avformat_version())
+func AvformatVersion() (uint, uint, uint) {
+	v := uint(C.avformat_version())
+	return avutil.AVVersionMajor(v), avutil.AVVersionMinor(v), avutil.AVVersionMicro(v)
 }
 
 //Return the libavformat build-time configuration.
@@ -206,7 +206,7 @@ func AvGuessFormat(sn, f, mt string) *OutputFormat {
 }
 
 //Guess the codec ID based upon muxer and filename.
-func AvGuessCodec(fmt *OutputFormat, sn, f, mt string, t MediaType) CodecId {
+func AvGuessCodec(fmt *OutputFormat, sn, f, mt string, t avutil.MediaType) CodecId {
 	Cshort_name := C.CString(sn)
 	defer C.free(unsafe.Pointer(Cshort_name))
 

@@ -4,6 +4,7 @@
 //Package avcodec contains the codecs (decoders and encoders) provided by the libavcodec library
 //Provides some generic global options, which can be set on all the encoders and decoders.
 package avcodec
+import "C"
 
 //#cgo pkg-config: libavformat libavcodec libavutil libswresample
 //#include <stdio.h>
@@ -14,8 +15,11 @@ package avcodec
 //#include <libavformat/avformat.h>
 //#include <libavcodec/avcodec.h>
 //#include <libavutil/avutil.h>
+// static enum AVMediaType getDescriptorType(const AVCodecDescriptor *d) {return d->type;}
+// static enum AVMediaType getCodecType(const AVCodec *d) {return d->type;}
 import "C"
 import (
+	"github.com/giorgisio/goav/avutil"
 	"unsafe"
 )
 
@@ -27,7 +31,6 @@ type (
 	ParserContext                 C.struct_AVCodecParserContext
 	Dictionary                    C.struct_AVDictionary
 	Frame                         C.struct_AVFrame
-	MediaType                     C.enum_AVMediaType
 	Packet                        C.struct_AVPacket
 	BitStreamFilter               C.struct_AVBitStreamFilter
 	BitStreamFilterContext        C.struct_AVBitStreamFilterContext
@@ -61,8 +64,8 @@ func (cp *AvCodecParameters) AvCodecGetId() CodecId {
 	return *((*CodecId)(unsafe.Pointer(&cp.codec_id)))
 }
 
-func (cp *AvCodecParameters) AvCodecGetType() MediaType {
-	return *((*MediaType)(unsafe.Pointer(&cp.codec_type)))
+func (cp *AvCodecParameters) AvCodecGetType() avutil.MediaType {
+	return *((*avutil.MediaType)(unsafe.Pointer(&cp.codec_type)))
 }
 
 func (cp *AvCodecParameters) AvCodecGetWidth() int {
@@ -79,6 +82,46 @@ func (cp *AvCodecParameters) AvCodecGetChannels() int {
 
 func (cp *AvCodecParameters) AvCodecGetSampleRate() int {
 	return *((*int)(unsafe.Pointer(&cp.sample_rate)))
+}
+
+func (c *Codec) ID() CodecId {
+	return (CodecId)(c.id)
+}
+
+func (c *Codec) Name() string {
+	return C.GoString(c.name)
+}
+
+func (c *Codec) LongName() string {
+	return C.GoString(c.long_name)
+}
+
+func (c *Codec) Type() avutil.MediaType {
+	return (avutil.MediaType)(C.getCodecType((*C.struct_AVCodec)(c)))
+}
+
+func (c *Codec) Capabilities() int {
+	return int(c.capabilities)
+}
+
+func (c *Codec) IsCapFrameThreads() bool {
+	return c.Capabilities() & C.AV_CODEC_CAP_FRAME_THREADS != 0
+}
+
+func (c *Codec) IsCapSliceThreads() bool {
+	return c.Capabilities() & C.AV_CODEC_CAP_SLICE_THREADS != 0
+}
+
+func (c *Codec) IsCapExperimental() bool {
+	return c.Capabilities() & C.AV_CODEC_CAP_EXPERIMENTAL != 0
+}
+
+func (c *Codec) IsCapDrawHorizBand() bool {
+	return c.Capabilities() & C.AV_CODEC_CAP_DRAW_HORIZ_BAND != 0
+}
+
+func (c *Codec) IsCapDR1() bool {
+	return c.Capabilities() & C.AV_CODEC_CAP_DR1 != 0
 }
 
 func (c *Codec) AvCodecGetMaxLowres() int {
@@ -105,12 +148,12 @@ func (c *Codec) AvcodecAllocContext3() *Context {
 	return (*Context)(C.avcodec_alloc_context3((*C.struct_AVCodec)(c)))
 }
 
-func (c *Codec) AvCodecIsEncoder() int {
-	return int(C.av_codec_is_encoder((*C.struct_AVCodec)(c)))
+func (c *Codec) AvCodecIsEncoder() bool {
+	return C.av_codec_is_encoder((*C.struct_AVCodec)(c)) != 0
 }
 
-func (c *Codec) AvCodecIsDecoder() int {
-	return int(C.av_codec_is_decoder((*C.struct_AVCodec)(c)))
+func (c *Codec) AvCodecIsDecoder() bool {
+	return C.av_codec_is_decoder((*C.struct_AVCodec)(c)) != 0
 }
 
 //Same behaviour av_fast_malloc but the buffer has additional FF_INPUT_BUFFER_PADDING_SIZE at the end which will always be 0.
@@ -119,8 +162,9 @@ func AvFastPaddedMalloc(p unsafe.Pointer, s *uint, t uintptr) {
 }
 
 //Return the LIBAvCODEC_VERSION_INT constant.
-func AvcodecVersion() uint {
-	return uint(C.avcodec_version())
+func AvcodecVersion() (uint, uint, uint) {
+	v := uint(C.avcodec_version())
+	return avutil.AVVersionMajor(v), avutil.AVVersionMinor(v), avutil.AVVersionMicro(v)
 }
 
 //Return the libavcodec build-time configuration.
@@ -181,8 +225,7 @@ func AvcodecFindDecoder(id CodecId) *Codec {
 }
 
 func AvCodecIterate(p *unsafe.Pointer) *Codec {
-	//return (*Codec)(C.av_codec_iterate(p))
-	return nil
+	return (*Codec)(C.av_codec_iterate(p))
 }
 
 //Find a registered decoder with the specified name.
@@ -256,8 +299,8 @@ func (a *AvHWAccel) AvHwaccelNext() *AvHWAccel {
 }
 
 //Get the type of the given codec.
-func AvcodecGetType(c CodecId) MediaType {
-	return (MediaType)(C.avcodec_get_type((C.enum_AVCodecID)(c)))
+func AvcodecGetType(c CodecId) avutil.MediaType {
+	return (avutil.MediaType)(C.avcodec_get_type((C.enum_AVCodecID)(c)))
 }
 
 //Get the name of a codec.
@@ -273,6 +316,38 @@ func AvcodecDescriptorGet(id CodecId) *Descriptor {
 //Iterate over all codec descriptors known to libavcodec.
 func (d *Descriptor) AvcodecDescriptorNext() *Descriptor {
 	return (*Descriptor)(C.avcodec_descriptor_next((*C.struct_AVCodecDescriptor)(d)))
+}
+
+func (d *Descriptor) ID() CodecId {
+	return (CodecId)(d.id)
+}
+
+func (d *Descriptor) Name() string {
+	return C.GoString(d.name)
+}
+
+func (d *Descriptor) LongName() string {
+	return C.GoString(d.long_name)
+}
+
+func (d *Descriptor) Type() avutil.MediaType {
+	return (avutil.MediaType)(C.getDescriptorType((*C.struct_AVCodecDescriptor)(d)))
+}
+
+func (d *Descriptor) Props() int {
+	return int(d.props)
+}
+
+func (d *Descriptor) IsIntraOnly() bool {
+	return d.Props() & C.AV_CODEC_PROP_INTRA_ONLY != 0
+}
+
+func (d *Descriptor) IsLossy() bool {
+	return d.Props() & C.AV_CODEC_PROP_LOSSY != 0
+}
+
+func (d *Descriptor) IsLossless() bool {
+	return d.Props() & C.AV_CODEC_PROP_LOSSLESS != 0
 }
 
 func AvcodecDescriptorGetByName(n string) *Descriptor {

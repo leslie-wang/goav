@@ -12,6 +12,7 @@ package avfilter
 */
 import "C"
 import (
+	"github.com/giorgisio/goav/avutil"
 	"unsafe"
 )
 
@@ -24,12 +25,12 @@ type (
 	Pad        C.struct_AVFilterPad
 	Dictionary C.struct_AVDictionary
 	Class      C.struct_AVClass
-	MediaType  C.enum_AVMediaType
 )
 
 //Return the LIBAvFILTER_VERSION_INT constant.
-func AvfilterVersion() uint {
-	return uint(C.avfilter_version())
+func AvfilterVersion() (uint, uint, uint) {
+	v := uint(C.avfilter_version())
+	return avutil.AVVersionMajor(v), avutil.AVVersionMinor(v), avutil.AVVersionMicro(v)
 }
 
 //Return the libavfilter build-time configuration.
@@ -53,8 +54,8 @@ func AvfilterPadGetName(p *Pad, pi int) string {
 }
 
 //Get the type of an Pad.
-func AvfilterPadGetType(p *Pad, pi int) MediaType {
-	return (MediaType)(C.avfilter_pad_get_type((*C.struct_AVFilterPad)(p), C.int(pi)))
+func AvfilterPadGetType(p *Pad, pi int) avutil.MediaType {
+	return (avutil.MediaType)(C.avfilter_pad_get_type((*C.struct_AVFilterPad)(p), C.int(pi)))
 }
 
 //Link two filters together.

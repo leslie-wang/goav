@@ -13,6 +13,7 @@ package avdevice
 */
 import "C"
 import (
+	"github.com/giorgisio/goav/avutil"
 	"unsafe"
 )
 
@@ -30,8 +31,9 @@ type (
 )
 
 //unsigned 	avdevice_version (void)
-func AvdeviceVersion() uint {
-	return uint(C.avdevice_version())
+func AvdeviceVersion() (uint, uint, uint) {
+	v := uint(C.avdevice_version())
+	return avutil.AVVersionMajor(v), avutil.AVVersionMinor(v), avutil.AVVersionMicro(v)
 }
 
 //Return the libavdevice build-time configuration.
