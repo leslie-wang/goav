@@ -12,7 +12,7 @@ package avfilter
 */
 import "C"
 import (
-	"github.com/giorgisio/goav/avutil"
+	"github.com/leslie-wang/goav/avutil"
 	"unsafe"
 )
 

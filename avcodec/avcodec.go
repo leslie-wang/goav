@@ -19,7 +19,7 @@ import "C"
 // static enum AVMediaType getCodecType(const AVCodec *d) {return d->type;}
 import "C"
 import (
-	"github.com/giorgisio/goav/avutil"
+	"github.com/leslie-wang/goav/avutil"
 	"unsafe"
 )
 

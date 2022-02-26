@@ -17,19 +17,103 @@ static int is_device(const AVClass *avclass)
 import "C"
 
 import (
+	"flag"
 	"fmt"
-	"github.com/giorgisio/goav/avcodec"
-	"github.com/giorgisio/goav/avdevice"
-	"github.com/giorgisio/goav/avfilter"
-	"github.com/giorgisio/goav/avutil"
-	"github.com/giorgisio/goav/swresample"
-	"github.com/giorgisio/goav/swscale"
+	"github.com/leslie-wang/goav/avcodec"
+	"github.com/leslie-wang/goav/avdevice"
+	"github.com/leslie-wang/goav/avfilter"
+	"github.com/leslie-wang/goav/avutil"
+	"github.com/leslie-wang/goav/swresample"
+	"github.com/leslie-wang/goav/swscale"
 	"sort"
 	"strings"
 	"unsafe"
 
-	"github.com/giorgisio/goav/avformat"
+	"github.com/leslie-wang/goav/avformat"
 )
+
+// ShowCmdConf is configuration for show commands
+type ShowCmdConf struct {
+	Formats bool
+	Muxers bool
+	Demuxers bool
+	Devices bool
+	Codecs bool
+	Decoders bool
+	Encoders bool
+	BSFS bool
+	Protocols bool
+	Filters bool
+	PixFmts bool
+	Layouts bool
+	SampleFmts bool
+	Colors bool
+}
+
+func (scc *ShowCmdConf) SetFlags(f *flag.FlagSet) {
+	f.BoolVar(&scc.Formats, "formats", false, "show available formats")
+	f.BoolVar(&scc.Muxers,"muxers", false, "show available muxers")
+	f.BoolVar(&scc.Demuxers, "demuxers", false, "show available demuxers")
+	f.BoolVar(&scc.Devices, "devices", false, "show available devices")
+	f.BoolVar(&scc.Codecs,"codecs", false, "show available codecs")
+	f.BoolVar(&scc.Decoders,"decoders", false, "show available decoders")
+	f.BoolVar(&scc.Encoders,"encoders", false, "show available encoders")
+	f.BoolVar(&scc.BSFS,"bsfs", false, "show available bit stream filters")
+	f.BoolVar(&scc.Protocols,"protocols", false, "show available protocols")
+	f.BoolVar(&scc.Filters,"filters", false, "show available filters")
+	f.BoolVar(&scc.PixFmts,"pix_fmts", false, "show available pixel formats")
+	f.BoolVar(&scc.Layouts,"layouts", false, "show standard channel layouts")
+	f.BoolVar(&scc.SampleFmts,"sample_fmts", false, "show available audio sample formats")
+	f.BoolVar(&scc.Colors,"colors", false, "show available color names")
+}
+
+// Show display based on the argument
+func (scc *ShowCmdConf) Show() bool {
+	if scc.Formats {
+		ShowFormats()
+		return true
+	} else if scc.Muxers {
+		ShowMuxers()
+		return true
+	} else if scc.Demuxers {
+		ShowDemuxers()
+		return true
+	} else if scc.Devices {
+		ShowDevices()
+		return true
+	} else if scc.Codecs {
+		ShowCodecs()
+		return true
+	} else if scc.Decoders {
+		ShowDecoders()
+		return true
+	} else if scc.Encoders {
+		ShowEncoders()
+		return true
+	} else if scc.BSFS {
+		ShowBitstreamFilters()
+		return true
+	} else if scc.Protocols {
+		ShowProtocols()
+		return true
+	} else if scc.Filters {
+		ShowFilters()
+		return true
+	} else if scc.PixFmts {
+		ShowPixelFormats()
+		return true
+	} else if scc.Layouts {
+		ShowChannelLayouts()
+		return true
+	} else if scc.SampleFmts {
+		ShowSampleFormats()
+		return true
+	} else if scc.Colors {
+		ShowColors()
+		return true
+	}
+	return false
+}
 
 func ShowVersion() {
 	major, minor, micro := avutil.AvutilVersion()

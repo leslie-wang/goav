@@ -10,7 +10,7 @@ package swresample
 	#include <libswresample/swresample.h>
 */
 import "C"
-import "github.com/giorgisio/goav/avutil"
+import "github.com/leslie-wang/goav/avutil"
 
 type (
 	Context        C.struct_SwrContext
