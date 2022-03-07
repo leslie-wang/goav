@@ -4,19 +4,22 @@
 //Package avcodec contains the codecs (decoders and encoders) provided by the libavcodec library
 //Provides some generic global options, which can be set on all the encoders and decoders.
 package avcodec
-import "C"
 
-//#cgo pkg-config: libavformat libavcodec libavutil libswresample
-//#include <stdio.h>
-//#include <stdlib.h>
-//#include <inttypes.h>
-//#include <stdint.h>
-//#include <string.h>
-//#include <libavformat/avformat.h>
-//#include <libavcodec/avcodec.h>
-//#include <libavutil/avutil.h>
-// static enum AVMediaType getDescriptorType(const AVCodecDescriptor *d) {return d->type;}
-// static enum AVMediaType getCodecType(const AVCodec *d) {return d->type;}
+/*
+#cgo pkg-config: libavformat libavcodec libavutil libswresample
+#include <stdio.h>
+#include <stdlib.h>
+#include <inttypes.h>
+#include <stdint.h>
+#include <string.h>
+#include <libavformat/avformat.h>
+#include <libavcodec/avcodec.h>
+#include <libavutil/avutil.h>
+static enum AVMediaType getDescriptorType(const AVCodecDescriptor *d) {return d->type;}
+static enum AVMediaType getCodecType(const AVCodec *d) {return d->type;}
+static void setCodecIdInCodecParameters(AVCodecParameters *codecpar, enum AVCodecID id) {codecpar->codec_id = id;}
+static void setMediaTypeInCodecParameters(AVCodecParameters *codecpar, enum AVMediaType type) {codecpar->type = type;}
+*/
 import "C"
 import (
 	"github.com/leslie-wang/goav/avutil"
@@ -60,27 +63,35 @@ type (
 	AvSampleFormat                C.enum_AVSampleFormat
 )
 
-func (cp *AvCodecParameters) AvCodecGetId() CodecId {
+func (cp *AvCodecParameters) ID() CodecId {
 	return *((*CodecId)(unsafe.Pointer(&cp.codec_id)))
 }
 
-func (cp *AvCodecParameters) AvCodecGetType() avutil.MediaType {
+func (cp *AvCodecParameters) SetID(id CodecId) {
+	C.setCodecIdInCodecParameters((*C.struct_AVCodecParameters)(cp), C.enum_AVCodecID(id))
+}
+
+func (cp *AvCodecParameters) MediaType() avutil.MediaType {
 	return *((*avutil.MediaType)(unsafe.Pointer(&cp.codec_type)))
 }
 
-func (cp *AvCodecParameters) AvCodecGetWidth() int {
+func (cp *AvCodecParameters) SetMediaType(typ avutil.MediaType) {
+	C.setMediaTypeInCodecParameters((*C.struct_AVCodecParameters)(cp), C.enum_AVMediaType(typ))
+}
+
+func (cp *AvCodecParameters) Width() int {
 	return (int)(*((*int32)(unsafe.Pointer(&cp.width))))
 }
 
-func (cp *AvCodecParameters) AvCodecGetHeight() int {
+func (cp *AvCodecParameters) Height() int {
 	return (int)(*((*int32)(unsafe.Pointer(&cp.height))))
 }
 
-func (cp *AvCodecParameters) AvCodecGetChannels() int {
+func (cp *AvCodecParameters) Channels() int {
 	return *((*int)(unsafe.Pointer(&cp.channels)))
 }
 
-func (cp *AvCodecParameters) AvCodecGetSampleRate() int {
+func (cp *AvCodecParameters) SampleRate() int {
 	return *((*int)(unsafe.Pointer(&cp.sample_rate)))
 }
 

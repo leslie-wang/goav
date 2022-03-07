@@ -69,6 +69,10 @@ func (ctxt *Context) Filename() string {
 	return C.GoString((*C.char)(unsafe.Pointer(&ctxt.filename[0])))
 }
 
+func (ctxt *Context) URL() string {
+	return C.GoString(ctxt.url)
+}
+
 // func (ctxt *Context) CodecWhitelist() string {
 // 	return C.GoString(ctxt.codec_whitelist)
 // }

@@ -31,6 +31,10 @@ const (
 	AV_DICT_MULTIKEY        = int(C.AV_DICT_MULTIKEY)
 )
 
+func NewDict() *Dictionary {
+	return (*Dictionary)(AvMallocz(uintptr(unsafe.Sizeof(Dictionary{}))))
+}
+
 func (d *Dictionary) AvDictGet(key string, prev *DictionaryEntry, flags int) *DictionaryEntry {
 	Ckey := C.CString(key)
 	defer C.free(unsafe.Pointer(Ckey))
@@ -47,11 +51,19 @@ func (d *Dictionary) AvDictCount() int {
 	return int(C.av_dict_count((*C.struct_AVDictionary)(d)))
 }
 
-func (d *Dictionary) AvDictSet(key, value string, flags int) int {
+func (d *Dictionary) AvDictSet(key string, value *string, flags int) int {
 	Ckey := C.CString(key)
 	defer C.free(unsafe.Pointer(Ckey))
 
-	Cvalue := C.CString(value)
+	if value == nil {
+		return int(C.av_dict_set(
+			(**C.struct_AVDictionary)(unsafe.Pointer(&d)),
+			Ckey,
+			nil,
+			C.int(flags),
+		))
+	}
+	Cvalue := C.CString(*value)
 	defer C.free(unsafe.Pointer(Cvalue))
 
 	return int(C.av_dict_set(

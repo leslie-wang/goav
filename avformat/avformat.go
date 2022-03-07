@@ -6,17 +6,19 @@
 //Supported formats (muxers and demuxers) provided by the libavformat library
 package avformat
 
-//#cgo pkg-config: libavformat libavcodec libavutil libavdevice libavfilter libswresample libswscale
-//#include <stdio.h>
-//#include <stdlib.h>
-//#include <inttypes.h>
-//#include <stdint.h>
-//#include <string.h>
-//#include <libavformat/avformat.h>
-//#include <libavcodec/avcodec.h>
-//#include <libavutil/avutil.h>
-//#include <libavutil/opt.h>
-//#include <libavdevice/avdevice.h>
+/*
+#cgo pkg-config: libavformat libavcodec libavutil libavdevice libavfilter libswresample libswscale
+#include <stdio.h>
+#include <stdlib.h>
+#include <inttypes.h>
+#include <stdint.h>
+#include <string.h>
+#include <libavformat/avformat.h>
+#include <libavcodec/avcodec.h>
+#include <libavutil/avutil.h>
+#include <libavutil/opt.h>
+#include <libavdevice/avdevice.h>
+ */
 import "C"
 import (
 	"unsafe"
@@ -134,14 +136,22 @@ func (s *Stream) AvStreamGetSideData(t AvPacketSideDataType, z int) *uint8 {
 }
 
 //Allocate an Context for an output format.
-func AvformatAllocOutputContext2(ctx **Context, o *OutputFormat, fo, fi string) int {
-	Cformat_name := C.CString(fo)
-	defer C.free(unsafe.Pointer(Cformat_name))
-
+func AvformatAllocOutputContext2(o *OutputFormat, fo *string, fi string) (*Context, error) {
 	Cfilename := C.CString(fi)
 	defer C.free(unsafe.Pointer(Cfilename))
 
-	return int(C.avformat_alloc_output_context2((**C.struct_AVFormatContext)(unsafe.Pointer(ctx)), (*C.struct_AVOutputFormat)(o), Cformat_name, Cfilename))
+	var (
+		ret C.int
+		ctx *C.struct_AVFormatContext
+	)
+	if fo == nil {
+		ret = C.avformat_alloc_output_context2(&ctx, (*C.struct_AVOutputFormat)(o), nil, Cfilename)
+	} else {
+		Cformat_name := C.CString(*fo)
+		defer C.free(unsafe.Pointer(Cformat_name))
+		ret = C.avformat_alloc_output_context2(&ctx, (*C.struct_AVOutputFormat)(o), Cformat_name, Cfilename)
+	}
+	return (*Context)(ctx), avutil.ErrorFromCode(int(ret))
 }
 
 //Find InputFormat based on the short name of the input format.

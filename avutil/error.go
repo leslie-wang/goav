@@ -16,6 +16,7 @@ import "errors"
 
 const (
 	AvErrorEOF    = -('E' | ('O' << 8) | ('F' << 16) | (' ' << 24))
+	AvErrorEncoderNotFound = -(0xF8 | ('E' << 8) | ('N' << 16) | ('C' << 24)) ///< Encoder not found
 	AvErrorEAGAIN = -35
 )
 

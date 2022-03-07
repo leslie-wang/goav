@@ -3,9 +3,7 @@ Golang binding for FFmpeg
 
 A comprehensive binding to the ffmpeg video/audio manipulation library.
 
-Fork from github.com/leslie-wang/goav, and add ffmpeg/ffprobe rewrite in golang with the binding library
-
-[![GoDoc](https://godoc.org/github.com/leslie-wang/goav?status.svg)](https://godoc.org/github.com/leslie-wang/goav)
+Fork from https://github.com/giorgisio/goav, and add ffmpeg/ffprobe rewrite in golang with the binding library
 
 ## Usage
 

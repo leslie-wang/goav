@@ -4,6 +4,7 @@ import (
 	"flag"
 	"github.com/leslie-wang/goav/avdevice"
 	"github.com/leslie-wang/goav/avformat"
+	"github.com/leslie-wang/goav/avutil"
 	"github.com/leslie-wang/goav/pkg/cmd"
 	"github.com/leslie-wang/goav/pkg/ffmpeg"
 	"log"
@@ -15,7 +16,7 @@ func main() {
 	f := flag.NewFlagSet("ffmpeg", flag.ExitOnError)
 	conf.SetFlags(f)
 
-	f.StringVar(&conf.Input, "i", "", "input file name")
+	//f.StringVar(&conf.Input, "i", "", "input file name")
 
 	f.StringVar(&conf.Format, "f", "", "force format")
 	f.StringVar(&conf.CodecNames, "c", "", "codec name")
@@ -400,29 +401,55 @@ func main() {
 		"set hardware device used when filtering", "device" },
 		*/
 
+		/*
 		if len(os.Args) == 1 {
 			f.Usage()
 			return
-		}
+		}*/
 
 		if err := f.Parse(os.Args[1:]); err != nil {
 			log.Fatal(err)
 		}
 
-		cmd.ShowVersion()
+	cmd.ShowVersion()
 
 	avformat.AvRegisterAll()
 	avformat.AvformatNetworkInit()
 	defer avformat.AvformatNetworkDeinit()
 	avdevice.AvdeviceRegisterAll()
 
+	iFormatOpts := avutil.NewDict()
+	val := "30"
+	iFormatOpts.AvDictSet(ffmpeg.OptFrameRate, &val, avutil.AV_DICT_DONT_OVERWRITE)
+	input, err := ffmpeg.NewInput(&ffmpeg.InputConfig{
+			Format: "avfoundation", FrameRate: 30, FormatOpts: iFormatOpts,
+		}, "0")
+		if err != nil {
+			log.Fatal(err)
+		}
+		conf.Input = []*ffmpeg.Input{input}
+
+		output, err := ffmpeg.NewOutput(&ffmpeg.OutputConfig{
+			FrameRate: 30.0,
+			FrameNumber: 20,
+		}, "/tmp/test.mpg")
+	if err != nil {
+		log.Fatal(err)
+	}
+	conf.Output = []*ffmpeg.Output{output}
+
 		// return if it is only show command
 		if conf.Show() {
 			return
 		}
 
-		if conf.Input == "" && len(f.Args()) == 0 {
+		if len(conf.Input) == 0 && len(f.Args()) == 0 {
 			f.Usage()
 			return
+		}
+
+		err = ffmpeg.Transcode(conf)
+		if err != nil {
+			log.Fatal(err)
 		}
 }
